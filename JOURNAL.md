@@ -171,3 +171,41 @@ sequenceDiagram
 ```
 
 **What the diagram shows:** The Redis lock, keyed as `review_lock:{profile_id}`, is acquired before the `Profile` snapshot is read and held across the entire pipeline span. Request B's acquire attempt blocks instead of proceeding while A still holds the lock. So, B cannot start until A has fully committed and released. This guarantees one of the two non-interleaved orders, and B's snapshot always reflects A's completed changes rather than a stale one. The lock is released in a finally block on every exit path, including failure. So, a crashed or errored pipeline doesn't hold it beyond the release call, and the TTL is the backstop if release itself never runs.
+
+## Week 10 — Iteration & reflection
+
+### Reviewer feedback
+
+**Feedback received:** [ ] Yes  [ X ] No — still awaiting review
+
+**Summary of feedback:**
+
+No review has come in yet.
+
+**How you responded:**
+
+N/A, no feedback to respond to yet.
+
+---
+
+### Reflection
+
+**What was harder than you expected?**
+
+Two things stood out to me that proved more challenging than I had initially anticipated. First, reproducing the race condition deterministically in a production environment took more work than expected. A flaky timing based test can catch the bug sometimes, but pinning it down with monkeypatched ingestion steps so it fails reliably on unfixed code took real thought. Second, guiding the LLM during debugging to actually follow the repo's own conventions took more redirects than I expected compared to a greenfield project. That included linting and formatting rules, documentation style, function naming patterns, and not reaching for a new dependency when one already in the repo could solve the problem.
+
+**What did you learn about working in a large codebase?**
+
+Working in a production codebase requires a different framework of thinking. Instead of defining use cases, conventions, or architecture from scratch, the priority is understanding what already exists. That means the existing components, what each one does, the overall system architecture, and how to contribute within that structure. That understanding is what makes code acceptable to merge in an open source or enterprise environment, not just functionally correct in isolation.
+
+**How did AI tools help — and where did they fall short?**
+
+AI tools were most useful for explaining code logic tied to libraries or tooling I wasn't already familiar with, and for building an overall picture of the repository's architecture when I prompted for it directly. Where it fell short was a recurring pattern. The AI would not abide by one or more of the existing repo conventions I mentioned above, including documentation style, function naming, and avoiding unnecessary new dependencies. On top of that, without persistent memory across sessions the LLM would often lose context. That's exactly what keeping CLAUDE.md continuously updated is meant to fix.
+
+**What would you do differently if you started over?**
+
+I'm genuinely satisfied with how this turned out. But if I started over, I'd spend more time up front building a richer understanding of the whole repository with AI's help before diving into the fix itself. For example, I'd ask AI to generate its own architecture diagram and explanations of the codebase's modular functionality, then verify that myself. I'd seed the result into CLAUDE.md before starting implementation, rather than building that understanding iteratively after I'd already dived in, which is what happened here.
+
+**What are you most proud of from this module?**
+
+I'm most proud that I was able to apply concepts from both CodePath AI201 and Systems Programming theory to solve a real issue in a production-esque environment. Systems programming is less my forte compared to AI, ML, and data work. But it's a field I find genuinely fascinating given my interest in FinTech and quant dev, where low latency and concurrency matter a lot. This issue gave me good practice and real confidence in that direction.
